@@ -1,80 +1,127 @@
-# net_watcher 擴充 — 權限正當性與上架合規審視
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>net_watcher 使用時間監看 — 隱私權政策 / Privacy Policy</title>
+<style>
+  :root{--ink:#1a2027;--muted:#55606b;--line:#e2e6ea;--accent:#1f6feb;--bg:#ffffff;--card:#f6f8fa;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.7;font-size:17px;}
+  .wrap{max-width:820px;margin:0 auto;padding:40px 24px 80px;}
+  h1{font-size:28px;margin:0 0 4px;}
+  .meta{color:var(--muted);font-size:16px;margin-bottom:28px;}
+  h2{font-size:21px;margin:34px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--line);}
+  h3{font-size:18px;margin:22px 0 8px;color:var(--accent);}
+  p,li{font-size:17px;}
+  ul{padding-left:22px;} li{margin:6px 0;}
+  table{width:100%;border-collapse:collapse;margin:10px 0;}
+  th,td{text-align:left;padding:10px 12px;border:1px solid var(--line);font-size:16px;vertical-align:top;}
+  th{background:var(--card);font-weight:600;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0;}
+  .en{color:var(--muted);}
+  b{color:#000;}
+  code{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-family:Consolas,monospace;font-size:16px;}
+  a{color:var(--accent);}
+  .fill{background:#fff7e6;border:1px solid #f0c36d;border-radius:4px;padding:1px 6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>net_watcher 使用時間監看 — 隱私權政策</h1>
+  <div class="meta">最後更新 / Last updated：2026-06-14</div>
 
-> 產出日期：2026-06
-> 對象：Chrome Web Store 審核（unlisted）／家長存檔
-> 來源：`extension/manifest.json` + `extension/src/` 全檔只讀分析（未改動任何檔）
+  <div class="card">
+    本擴充（net_watcher 使用時間監看）是一款<b>家長對自己未成年子女、在自家電腦上透明安裝</b>的螢幕使用時間管理工具。它偵測 YouTube、Netflix、Instagram、TikTok 的實際使用時間，回報給家長在自家網域自行架設的後端，由家長設定每日額度並在超額時封鎖。本擴充非隱藏式監控、不對外散布、不販售。
+  </div>
 
----
+  <h2>1. 由誰蒐集、為何蒐集</h2>
+  <ul>
+    <li><b>蒐集者</b>：安裝本工具的家長（個人 / 家庭用途），並非任何商業組織。</li>
+    <li><b>目的</b>：管理未成年子女每日在受監控影音 / 社群平台的使用時間，超額時封鎖，僅此單一用途。</li>
+  </ul>
 
-## 1. 目前宣告的權限逐項說明（審核要每項有正當理由）
+  <h2>2. 蒐集哪些資料</h2>
+  <table>
+    <tr><th>資料</th><th>用途</th></tr>
+    <tr><td>受監控分頁的網址、分頁標題、播放狀態（是否正在播放 / 暫停）</td><td>判斷該服務是否「實際在使用」以正確計時</td></tr>
+    <tr><td>各服務每日累計使用秒數</td><td>對照家長設定的每日額度，決定是否封鎖</td></tr>
+    <tr><td>裝置名稱（電腦 hostname）</td><td>讓家長在後台辨識是哪一台裝置</td></tr>
+  </table>
+  <p>本工具<b>不</b>蒐集：帳號密碼、輸入內容、剪貼簿、非受監控網站的瀏覽內容、影音畫面或聲音、任何金融或健康資料。</p>
 
-### 1.1 `permissions`
+  <h2>3. 資料如何使用、流向何處</h2>
+  <ul>
+    <li>資料由本機常駐程式經本機通道（Native Messaging）接收後，傳送到<b>家長自行架設的後端</b>（<code>autoassistance.cnj.tw</code>），作為「今天用了多少、還剩多少」的唯一真實來源。</li>
+    <li>資料<b>僅用於</b>上述使用時間管理之單一用途。</li>
+    <li><b>不販售、不分享給任何第三方</b>，<b>不用於廣告或任何與核心功能無關之用途</b>，<b>不用於建立任何使用者畫像或訓練模型</b>。</li>
+    <li>資料只在家長本機與家長自架的後端之間流動，不經過開發者或任何外部服務商。</li>
+  </ul>
 
-| 權限 | 用途 | 正當性說明（給審核） |
-|------|------|----------------------|
-| `nativeMessaging` | 經 `chrome.runtime.connectNative("com.netwatcher.host")` 開一條持久 stdio port，把「當下正在使用哪個影音服務」的 1 秒心跳推給本機常駐 agent（家長端）。 | 這是本擴充的**核心傳輸通道**。改用 Native Messaging 而非 localhost HTTP 的理由是安全：HTTP 端點任何本機程序都能 `curl` 自設 Origin 偽造心跳把計時歸零；Native Messaging 由 Chrome 經 stdio 生出 host 子程序、host manifest 以 `allowed_origins` 綁定本擴充 ID，無開放 TCP port，無法被偽造。**權限與單一用途直接相符**，審核應可接受。 |
-| `alarms` | `chrome.alarms` 設標稱 30 秒週期的 backstop 心跳，喚醒已被 MV3 回收的 service worker。 | MV3 service worker 約 30 秒 idle 即被回收，連帶殺掉心跳定時器。`alarms` 是官方建議的 MV3 週期喚醒手段，用來確保「瀏覽器開著就一定有心跳」（避免 agent 端誤判「擴充被停用」而 fail-closed 封鎖全部）。屬低敏感權限，審核幾乎不會質疑。 |
+  <div class="card">
+    <b>符合 Chrome Web Store「有限使用 (Limited Use)」要求</b>：本擴充對使用者資料的蒐集與使用，完全遵守
+    <a href="https://developer.chrome.com/docs/webstore/program-policies/limited-use">Chrome Web Store User Data Policy</a>
+    （含 Limited Use 條款）。資料僅用於對使用者揭露的單一用途，不轉售、不用於廣告、不做與功能無關之使用。
+  </div>
 
-> 註：`README.md` 與舊註解提到「`permissions` 僅 `nativeMessaging`」，但**現行 `manifest.json` 實際同時宣告 `nativeMessaging` 與 `alarms`**（`service_worker.js` 確實有用 `chrome.alarms`）。文件與實際碼有此小落差，以實際 manifest 為準。`alarms` 有實際使用、不是殘留，無須移除。
+  <h2>4. 資料保存與刪除</h2>
+  <ul>
+    <li>使用時間與瀏覽紀錄保存在家長本機及家長自架後端；瀏覽紀錄於後端保留約 90 天後自動清除。</li>
+    <li><b>停用或移除本擴充、或解除安裝本工具，即停止一切資料蒐集</b>；家長可自行刪除後端已儲存的資料。</li>
+  </ul>
 
-### 1.2 `host_permissions`
+  <h2>5. 權限說明</h2>
+  <table>
+    <tr><th>權限</th><th>為何需要</th></tr>
+    <tr><td><code>nativeMessaging</code></td><td>把使用心跳安全傳給本機常駐程式（不開任何網路埠，避免被偽造）</td></tr>
+    <tr><td><code>alarms</code></td><td>維持背景程序存活，確保心跳不中斷（否則會被誤判為規避而封鎖）</td></tr>
+    <tr><td>對 YouTube / Netflix / Instagram / TikTok 的存取</td><td>偵測這四個平台分頁的實際播放狀態以計時</td></tr>
+    <tr><td>對所有網站的最小存取（keepalive）</td><td>僅用於維持背景程序存活，<b>不</b>讀取或蒐集這些網站的任何內容</td></tr>
+  </table>
 
-**目前 manifest 完全沒有宣告 `host_permissions` 區塊。** content script 的網域是寫在 `content_scripts[].matches`（見下），不需要 `host_permissions`。這是好事：沒有 broad host_permissions（例如 `<all_urls>` 放進 host_permissions）能讓審核大幅降低敏感度。**無需任何調整。**
+  <h2>6. 兒童資料</h2>
+  <p>本工具設計用途即為家長管理自己未成年子女的裝置使用，由家長在自家裝置上知情安裝並掌控所有資料。資料不離開家庭範圍（家長本機 + 家長自架後端），不提供給開發者或任何第三方。</p>
 
-### 1.3 `content_scripts[].matches`
+  <h2>7. 聯絡方式</h2>
+  <p>如對本隱私權政策有任何疑問，請聯絡：<span class="fill">[請填入家長聯絡 email]</span></p>
 
-擴充宣告**兩支** content script：
+  <hr style="margin:40px 0;border:none;border-top:1px solid var(--line);">
 
-**(A) `src/content/detect_active_use.js`** — 注入 4 個服務 / 6 個網域，`all_frames: true`：
+  <h1 class="en">Privacy Policy (English)</h1>
+  <div class="meta">Last updated: 2026-06-14</div>
 
-| match pattern | 用途與正當性 |
-|---------------|--------------|
-| `https://*.youtube.com/*`, `https://youtube.com/*` | 偵測 YouTube 影片實際播放時間。 |
-| `https://*.youtube-nocookie.com/*`, `https://youtube-nocookie.com/*` | `/embed` 可放任意 YouTube 影片，計時併入 youtube，防止用 nocookie embed 繞過。 |
-| `https://*.youtubekids.com/*`, `https://youtubekids.com/*` | YouTube Kids 內容同樣計入 youtube。 |
-| `https://*.netflix.com/*`, `https://netflix.com/*` | 偵測 Netflix 影片實際播放時間。 |
-| `https://*.instagram.com/*`, `https://instagram.com/*` | 偵測 Instagram（含 Reels）觀看／純滑動時間。 |
-| `https://*.tiktok.com/*`, `https://tiktok.com/*` | 偵測 TikTok 觀看／純滑動時間。 |
+  <div class="card en">
+    net_watcher is a screen-time management tool a <b>parent installs transparently on their own minor child's home computer</b>. It detects actual usage time on YouTube, Netflix, Instagram, and TikTok, reports it to a backend the parent self-hosts, and blocks each service once the parent-set daily limit is exceeded. It is not hidden surveillance, is not distributed publicly, and is not sold.
+  </div>
 
-正當性：**這 4 個服務正是擴充宣稱的單一用途（家長使用時間監看）的標的**，matches 精確列舉、沒有過寬。`all_frames: true` 的理由是 YouTube 嵌入播放器／廣告框各自一個 frame，需逐 frame 偵測避免廣告框 inactive 覆蓋主框 playing 的漏算（碼中 `track_tab_states.js` 以 `tabId:frameId` 為鍵正是為此）。這是**合理且可解釋**的。
+  <h3>Who collects & why</h3>
+  <p class="en">Collected by the installing parent (personal/family use only) for the single purpose of managing a minor child's daily usage time on the monitored video/social platforms and blocking when over the limit.</p>
 
-**(B) `src/content/keepalive.js`** — `matches: ["<all_urls>"]`，`all_frames: false`：
+  <h3>What is collected</h3>
+  <ul class="en">
+    <li>URL, tab title, and playback state of monitored tabs — to determine whether the service is actually in use for accurate timing.</li>
+    <li>Daily accumulated seconds per service — to compare against the parent-set limit.</li>
+    <li>Device name (hostname) — so the parent can identify which device it is.</li>
+  </ul>
+  <p class="en">It does <b>not</b> collect passwords, keystrokes, clipboard, browsing of non-monitored sites, audio/video media, or any financial/health data.</p>
 
-| match pattern | 用途與正當性 |
-|---------------|--------------|
-| `<all_urls>` | 在每個頁面主框開一條空 ping 長連線 port，維持 MV3 service worker 存活，確保「瀏覽器開著就一定有心跳」。 |
+  <h3>How data is used & where it goes</h3>
+  <ul class="en">
+    <li>Received locally via Native Messaging by a local agent, then sent to a <b>backend self-hosted by the parent</b> (<code>autoassistance.cnj.tw</code>) as the source of truth for remaining time.</li>
+    <li>Used <b>solely</b> for the stated single purpose. <b>Never sold, never shared with third parties, never used for advertising, profiling, or model training.</b></li>
+    <li>Data flows only between the parent's machine and the parent's self-hosted backend — not through the developer or any external provider.</li>
+  </ul>
 
-正當性（**這是審核唯一可能多看一眼的點**）：`<all_urls>` 看起來很寬，但 `keepalive.js` 經查證**完全不讀頁面內容、不蒐集任何資料、不上報網址／標題／DOM**——port 訊息只是 `{ type: "keepalive-ping" }` 空 ping（見 `keepalive.js` 第 47 行）。它存在的唯一理由是修正一個 P0 誤封 bug：女兒只開 Chrome 寫作業（無受監控分頁）時 SW 被回收 → 無心跳 → agent 誤判「擴充被停用」而封鎖全部。**審核時須在權限說明與隱私揭露中明確聲明「`<all_urls>` 僅用於 keep-alive、不蒐集資料」**（草稿已在 `privacy_disclosure_draft.md` 寫好）。
+  <div class="card en">
+    <b>Limited Use compliance</b>: This extension's use of user data complies with the
+    <a href="https://developer.chrome.com/docs/webstore/program-policies/limited-use">Chrome Web Store User Data Policy</a>, including the Limited Use requirements.
+  </div>
 
----
+  <h3>Retention & deletion</h3>
+  <p class="en">Usage and browsing records are stored on the parent's machine and self-hosted backend; browsing records auto-expire after ~90 days. Disabling/removing the extension or uninstalling the tool stops all collection; the parent can delete stored backend data at any time.</p>
 
-## 2. 會不會被 Web Store 審核打回？逐點明確結論
-
-| 檢查項 | 結論 | 行動 |
-|--------|------|------|
-| **manifest 的 `key` 欄位** | **必須移除**。上架全新項目時 Web Store 會回 `"key" field not allowed in manifest`，ID 由商店自動指派。本機 `key` 不能留在上傳的 zip 裡。 | `pack_for_webstore.ps1` 已實作「打包前產生去 key 的暫時 manifest，不動原檔」。詳見 `id_binding_inventory.md` 的 key↔ID 關係說明。 |
-| **remote code（遠端載入程式碼）** | **無風險**。全擴充只有靜態 `.js`，無 `eval`、無 `new Function`、無遠端 `<script>` 注入、無 CDN 抓 JS。MV3 本就禁 remote code，本擴充天生合規。 | 無須改。 |
-| **過寬權限** | **基本安全，一個需特別說明點**。`nativeMessaging` / `alarms` / 4 服務 matches 都精準對應單一用途。唯一需主動說明的是 keepalive 的 `<all_urls>`。 | 在審核的「權限說明」欄與隱私揭露明確寫出 `<all_urls>` 只做 keep-alive、零資料蒐集（草稿已備）。 |
-| **單一用途（single purpose）** | **明確、單一**：偵測 4 個影音平台的使用時間並回報本機 agent 供家長設額度。description 已如實說明、非隱藏監控。 | 隱私揭露的「單一用途說明」直接用草稿。 |
-| **資料蒐集揭露** | **需如實填**。擴充確實會把網址／標題／播放證據（evidence）送到本機 agent（再由 agent 轉家長自架後端 autoassistance.cnj.tw）。屬「網站內容 / 使用者活動」類資料。 | 在 Privacy practices tab 勾選對應資料類型、填 limited use 認證、附隱私政策 URL。草稿已備繁中＋英文。 |
-| **隱私政策 URL** | **2026 強制**：凡請求資料相關權限者，Developer Dashboard 必須填隱私政策 URL，否則 30 天警告後停用。 | 家長須準備一個可公開存取的隱私政策頁（可放在 autoassistance.cnj.tw 下，或用免費隱私政策產生器）。草稿文字已備，貼上去即可。 |
-| **Native Messaging host 的揭露** | 審核可能想知道資料送去哪。 | 隱私揭露已說明：資料只送本機 agent，再到家長自架後端，不送任何第三方／不販售。 |
-| **監控類擴充政策風險** | **中等需留意**。Google 對「監控／spyware」類有政策；但本擴充定位為**家長對未成年子女的透明監控**（description 已聲明非隱藏、安裝在自家機器、資料只進家長自己的後端）。這類「家長控制」用途是被允許的，但**務必在 listing 與隱私政策中強調透明性與家長／受監護人關係**，避免被誤判為偷窺類 spyware。 | listing 描述與隱私政策都強調「家長透明安裝、監控自己未成年子女、資料僅家長自用」。草稿已寫入此定位。 |
-
-### 總結論
-
-**可以上架，預期能過審**，但出貨前必做三件事：
-1. **移除 manifest 的 `key`**（腳本已處理）。
-2. **填妥 Privacy practices tab**：單一用途、各權限用途（特別解釋 keepalive 的 `<all_urls>`）、資料蒐集類型、limited use 認證、隱私政策 URL。
-3. **listing／隱私政策強調「家長透明監控未成年子女、資料僅家長自用、不售不分享」**，降低被歸類為 spyware 的風險。
-
----
-
-## 來源（2026 查證）
-
-- [Chrome Web Store review process — Chrome for Developers](https://developer.chrome.com/docs/webstore/review-process)
-- [Are "Unlisted" Chrome extensions reviewed the same as "Public" ones? — chromium-extensions group](https://groups.google.com/a/chromium.org/g/chromium-extensions/c/bMs4Rqsm4mQ)
-- [Manifest - key — Chrome for Developers](https://developer.chrome.com/docs/extensions/reference/manifest/key)
-- ["Keeping a consistent extension ID" without "key" in manifest v3 — chromium-extensions group](https://groups.google.com/a/chromium.org/g/chromium-extensions/c/Su50pbNzRms)
-- [Updated Privacy Policy & Secure Handling Requirements (User Data FAQ) — Chrome for Developers](https://developer.chrome.com/docs/webstore/program-policies/user-data-faq)
-- [Chrome Web Store Program Policies — Chrome for Developers](https://developer.chrome.com/docs/webstore/program-policies/policies)
+  <h3>Contact</h3>
+  <p class="en">Questions about this policy: <span class="fill">[parent contact email]</span></p>
+</div>
+</body>
+</html>
